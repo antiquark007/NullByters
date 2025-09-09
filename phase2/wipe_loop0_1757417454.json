@@ -1,0 +1,10 @@
+{
+  "tool":"NullBytes",
+  "version":"0.2.0",
+  "device":"\/dev\/loop0",
+  "started_at":"2025-09-09T11:30:54Z",
+  "mode":"clear",
+  "finished_at":"2025-09-09T11:30:54Z",
+  "bytes_written":52428800,
+  "method":"zero_overwrite"
+}
