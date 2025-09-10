@@ -1,0 +1,100 @@
+let’s go deep into NIST Special Publication 800‑88 Revision 1 so you have a clear, practical, and technical understanding of what it is, why it matters, and how it’s applied in real-world data sanitization.
+
+📜 What is NIST SP 800‑88?
+Full name: Guidelines for Media Sanitization
+
+Published by: U.S. National Institute of Standards and Technology (NIST)
+
+Latest revision: Rev. 1 (December 2014)
+
+Purpose: Provide a standardized framework for securely erasing data from all types of storage media so that it’s infeasible to recover, even with advanced forensic techniques.
+
+Scope: Applies to all organizations handling sensitive data — government, corporate, and even individuals who want to ensure proper data destruction.
+
+🎯 Core Goals
+Protect confidentiality by ensuring no residual data remains after media is reused, sold, recycled, or disposed of.
+
+Standardize sanitization methods so results are predictable and verifiable.
+
+Map sanitization methods to risk levels — not all data or media types require the same approach.
+
+🧩 Key Concepts
+1. Media Sanitization
+The process of rendering access to target data infeasible for a given level of effort.
+
+2. Three Sanitization Categories
+Category	Description	Example Methods	Residual Data Risk
+Clear	Logical techniques to overwrite or reset storage so data can’t be recovered via standard system functions.	Single-pass overwrite, blkdiscard, factory reset (if it overwrites)	Low (but may be recoverable with lab forensics)
+Purge	More thorough — makes recovery infeasible even with advanced lab techniques.	ATA Secure Erase, NVMe Sanitize, Cryptographic Erase, degaussing	Very low
+Destroy	Physically damaging media so it’s unusable.	Shredding, incineration, pulverizing	Zero (media is gone)
+🛠 How Methods Are Chosen
+NIST SP 800‑88 says you must consider:
+
+Confidentiality level of the data (low, moderate, high)
+
+Media type (HDD, SSD, NVMe, optical, tape, mobile device)
+
+Intended future use (reuse internally, resale, disposal)
+
+Available tools (software commands, hardware features, physical destruction)
+
+📌 Examples by Media Type
+HDD (magnetic):
+
+Clear: Single overwrite with zeros or random data
+
+Purge: ATA Secure Erase, degaussing
+
+SSD / NVMe:
+
+Clear: blkdiscard or firmware-based reset
+
+Purge: NVMe Sanitize (block erase or crypto erase)
+
+Mobile devices:
+
+Clear: Factory reset (if it overwrites)
+
+Purge: OEM cryptographic erase
+
+Optical media:
+
+Destroy: Shredding or pulverizing
+
+🧪 Verification Requirement
+Sanitization is not complete until you verify it.
+
+Verification can be:
+
+Logical: Sampling random sectors to ensure they’re wiped
+
+Hardware status: Checking controller flags (e.g., NVMe sanitize status)
+
+Physical inspection: For destroyed media
+
+⚠ Common Pitfalls
+HPA/DCO not removed: Hidden areas on HDDs can retain data unless explicitly unlocked.
+
+SSD wear leveling: Overwriting may not touch all cells — use firmware sanitize commands.
+
+USB-to-SATA bridges: May block ATA commands, requiring direct connection.
+
+🔄 Lifecycle Integration
+NIST recommends sanitization be part of:
+
+Media reuse (internal redeployment)
+
+End-of-life disposal
+
+Incident response (breach containment)
+
+Cloud exit (virtual media sanitization)
+
+📂 Why It’s Important for Your Project
+Since your hackathon wiping tool aims to be standards-compliant, mapping your wipe methods to NIST SP 800‑88 levels (“Clear” or “Purge”) will:
+
+Give credibility to your solution
+
+Allow auditable certificates to state compliance
+
+Help recyclers and ITAD vendors meet legal requirements
