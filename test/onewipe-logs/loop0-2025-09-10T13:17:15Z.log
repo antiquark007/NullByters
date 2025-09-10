@@ -1,0 +1,5 @@
+[2025-09-10T13:17:15Z] Starting overwrite of /dev/loop0 (size=10485760 bytes)
+[2025-09-10T13:17:15Z] Pass 1/1
+[2025-09-10T13:17:15Z] Completed pass 1
+[2025-09-10T13:17:15Z] verify last segment OK
+[2025-09-10T13:17:15Z] Overwrite finished
