@@ -1,0 +1,457 @@
+# ====================================
+# NullBytes Desktop App - .gitignore
+# ====================================
+
+# ===============================
+# Node.js / Electron Frontend
+# ===============================
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage
+.grunt
+
+# Bower dependency directory
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons
+build/Release
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.test
+.env.production
+.env.local
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# ===============================
+# Electron Specific
+# ===============================
+
+# Electron build output
+build/
+dist/
+out/
+
+# Electron packager
+*-darwin-x64/
+*-linux-x64/
+*-win32-x64/
+*-linux-ia32/
+*-win32-ia32/
+
+# Electron Builder
+dist_electron/
+
+# Electron Forge
+.webpack/
+
+# Auto-generated files
+*.auto
+
+# ===============================
+# C/C++ Backend
+# ===============================
+
+# Compiled Object files
+*.o
+*.obj
+*.lo
+*.slo
+*.ko
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+wipe-tool
+wipe-tool.exe
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+# Make
+Makefile.bak
+
+# ===============================
+# IDE and Editor Files
+# ===============================
+
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.swp
+*.swo
+*~
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*.swn
+.vimrc.local
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+
+# Nano
+*.save
+
+# ===============================
+# Operating System Files
+# ===============================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===============================
+# Application Specific
+# ===============================
+
+# Wipe tool outputs
+*.log
+wipe_log.json
+wipe_certificate.pdf
+wipe_certificate.json
+
+# Test files and mock data
+test_*.txt
+mock_device_*
+*.test
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+private_key.json
+certificate.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Configuration files with sensitive data
+config.local.json
+.env.local
+secrets.json
+
+# ===============================
+# Archive and Backup Files
+# ===============================
+
+# Archives
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.rar
+*.7z
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.tmp
+
+# Patch files
+*.patch
+*.diff
+
+# ===============================
+# Documentation Build
+# ===============================
+
+# Generated documentation
+docs/build/
+site/
+
+# ===============================
+# Logs and Runtime
+# ===============================
+
+# Application logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime files
+*.pid
+*.seed
+*.pid.lock
+
+# ===============================
+# Security and Sensitive Data
+# ===============================
+
+# API keys and tokens
+.api-keys
+.tokens
+*.token
+
+# SSH keys
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.pub
+
+# GPG keys
+*.gpg
+*.asc
+
+# ===============================
+# Package Managers
+# ===============================
+
+# Yarn
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# PNPM
+.pnpm-store/
+
+# Rush
+common/temp/
+
+# ===============================
+# Build Tools and CI/CD
+# ===============================
+
+# GitHub Actions
+.github/workflows/*.yml.bak
+
+# Travis CI
+.travis.yml.bak
+
+# Jenkins
+Jenkinsfile.bak
+
+# Docker
+.dockerignore.bak
+docker-compose.override.yml
+
+# ===============================
+# Development and Testing
+# ===============================
+
+# Jest
+/coverage/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+
+# Playwright
+test-results/
+playwright-report/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# ===============================
+# Miscellaneous
+# ===============================
+
+# Thumbnails
+*.thumb
+
+# Lock files (keep package-lock.json, remove others if needed)
+# yarn.lock
+# pnpm-lock.yaml
+
+# ESLint
+.eslintcache
+
+# Prettier
+.prettierignore.bak
+
+# StyleLint
+.stylelintcache
+
+# Ignore everything in temp directory
+temp/*
+!temp/.gitkeep
+
+# Ignore OS generated files
+.DS_Store?
+ehthumbs.db
+Thumbs.db
+
+# ===============================
+# Project Specific Exceptions
+# ===============================
+
+# Keep empty directories
+!.gitkeep
+
+# Keep example configs
+!config.example.json
+!.env.example
+
+# Keep build scripts
+!build.sh
+!install.sh
+
+# ===============================
+# End of .gitignore
+# ===============================
