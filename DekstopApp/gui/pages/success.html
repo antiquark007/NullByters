@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Wipe Complete</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand"><div class="logo">✓</div><div><div class="title">Wipe Complete</div><div class="subtitle">Certificate generation</div></div></div>
+      <div><button class="btn ghost" id="home">Home</button></div>
+    </div>
+
+    <div class="card">
+      <div id="summaryArea"></div>
+
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn" id="genCert">Generate Certificate</button>
+        <button class="btn ghost" id="viewJson" disabled>Open JSON</button>
+        <button class="btn ghost" id="exportBtn" disabled>Export</button>
+      </div>
+
+      <div style="margin-top:12px" id="certStatus"></div>
+    </div>
+  </div>
+
+  <script src="../renderer/success.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Verification Portal</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand"><div class="logo">🔐</div><div><div class="title">Verification Portal</div><div class="subtitle">Check certificate authenticity</div></div></div>
+      <div><button class="btn ghost" id="home">Home</button></div>
+    </div>
+
+    <div class="card">
+      <div>
+        <div class="small-muted">Upload certificate JSON</div>
+        <input id="certFile" type="file" accept=".json" />
+      </div>
+
+      <div style="margin-top:10px">
+        <button class="btn" id="verify">Verify Certificate</button>
+      </div>
+
+      <div style="margin-top:12px" id="verifyOutput" class="log"></div>
+    </div>
+  </div>
+
+  <script src="../renderer/verify.js"></script>
+</body>
+</html>

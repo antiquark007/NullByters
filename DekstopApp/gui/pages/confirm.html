@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Confirm Wipe</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand"><div class="logo">SW</div><div><div class="title">Confirm Wipe</div><div class="subtitle">Final confirmation before destructive action</div></div></div>
+      <div><button class="btn ghost" id="back">Back</button></div>
+    </div>
+
+    <div class="card">
+      <div id="deviceSummary"></div>
+      <div style="margin-top:12px">
+        <label>Wipe Method:
+          <select id="methodSelect" class="select">
+            <option value="clear">Quick Erase (Clear)</option>
+            <option value="purge">Secure Erase (Purge)</option>
+          </select>
+        </label>
+        <div class="small-muted" style="margin-top:8px">Clear: faster. Purge: deeper & NIST-compliant.</div>
+      </div>
+
+      <div style="margin-top:12px">
+        <div class="warning">⚠️ This action is irreversible. All data on the selected device will be permanently erased.</div>
+        <div style="margin-top:8px">Type <strong>WIPE</strong> to enable the button: <input id="confirmInput" class="input" style="width:120px;margin-left:8px" /></div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:14px;gap:8px">
+        <button class="btn ghost" id="cancel">Cancel</button>
+        <button class="btn" id="start" disabled>Start Wipe</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../renderer/confirm.js"></script>
+</body>
+</html>

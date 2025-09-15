@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Advanced Options</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand"><div class="logo">⚙️</div><div><div class="title">Advanced Options</div><div class="subtitle">Power-user settings</div></div></div>
+      <div><button class="btn ghost" id="back">Back</button></div>
+    </div>
+
+    <div class="card">
+      <label><input type="checkbox" id="opt-hpa" /> Attempt HPA/DCO removal (if supported)</label><br>
+      <label><input type="checkbox" id="opt-verify" /> Verify random sectors after wipe</label><br>
+      <label><input type="checkbox" id="opt-dry" /> Dry run (simulate without writing)</label>
+      <div style="margin-top:10px" class="small-muted">Advanced options are hardware-dependent. Use carefully.</div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px">
+        <button class="btn ghost" id="reset">Reset</button>
+        <button class="btn" id="save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../renderer/advanced.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>SecureWiper — Home</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <div class="logo">SW</div>
+        <div>
+          <div class="title">SecureWiper</div>
+          <div class="subtitle">One-click secure data erasure — NIST-aligned</div>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn" id="scanBtn">Scan Devices</button>
+        <button class="btn ghost" id="verifyBtn">Verification Portal</button>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="hl">Quick Start</div>
+            <div class="small-muted">Boot from USB, plug target drive, click scan.</div>
+          </div>
+          <div class="small-muted">Version 0.1 — Hackathon build</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hl">Demo Controls</div>
+        <p class="small-muted">Use mock devices if the CLI is missing. This page launches detection flow.</p>
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <button class="btn" id="startScan">Start Scan</button>
+          <button class="btn ghost" id="openAdvanced">Advanced</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <div>Made by Team SecureWiper</div>
+      <div class="small-muted">Safe demo: use spare USBs or VM snapshots</div>
+    </div>
+  </div>
+
+  <script src="../renderer/landing.js"></script>
+</body>
+</html>
