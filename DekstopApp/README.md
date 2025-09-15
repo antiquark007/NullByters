@@ -321,16 +321,4 @@ npm run test:platforms
 
 **Disclaimer**: Users are responsible for compliance with local regulations and proper data handling procedures. This tool is provided "as-is" without warranty.
 
----
-
-## Contact & Support
-
-For technical support, feature requests, or security concerns:
-
-- **Issues**: [GitHub Issues](https://github.com/nullbytes/desktop-app/issues)
-- **Documentation**: [Wiki](https://github.com/nullbytes/desktop-app/wiki)
-- **Security**: security@nullbytes.org
-
----
-
 *NullBytes Desktop App - Secure, Compliant, Professional Data Destruction*
