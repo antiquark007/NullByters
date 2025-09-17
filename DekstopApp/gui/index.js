@@ -34,139 +34,150 @@ function callPythonScript(args) {
     
     console.log('[DEBUG] Executing:', pythonCmd, [scriptPath, ...args]);
     
-    return spawn(pythonCmd, [scriptPath, ...args], {
-        cwd: path.join(__dirname, '..'),
-        env: process.env,
-        stdio: ['pipe', 'pipe', 'pipe']
-    });
+    // FOR LINUX: Use sudo to run Python script with elevated privileges
+    if (process.platform !== 'win32') {
+        return spawn('sudo', [pythonCmd, scriptPath, ...args], {
+            cwd: path.join(__dirname, '..'),
+            env: process.env,
+            stdio: ['pipe', 'pipe', 'pipe']
+        });
+    } else {
+        return spawn(pythonCmd, [scriptPath, ...args], {
+            cwd: path.join(__dirname, '..'),
+            env: process.env,
+            stdio: ['pipe', 'pipe', 'pipe']
+        });
+    }
 }
+
 
 /* ---------- IPC: Device Scanning ---------- */
 ipcMain.handle('scan-devices', async () => {
-  const pythonTool = path.join(__dirname, '..', 'wipe-tool', 'wipe.py');
-  
-  console.log('[DEBUG] Looking for Python tool at:', pythonTool);
-  console.log('[DEBUG] File exists:', fs.existsSync(pythonTool));
+  // Use mainWipe.py as entry point for cross-platform support
+  const pythonTool = path.join(__dirname, '..', 'wipe-tool', 'mainWipe.py');
   
   if (!fs.existsSync(pythonTool)) {
-    console.log('[DEBUG] Python wipe tool not found, using mock data');
+    console.log('[DEBUG] Main wipe tool not found, using mock data');
     return {
       devices: [
         {
           name: "Mock USB Drive",
-          path: "\\\\?\\PHYSICALDRIVE1",  // Windows format for mock
+          path: process.platform === 'win32' ? '\\\\.\\PHYSICALDRIVE1' : "/dev/sdb",
           size: "16.0G",
           model: "Mock USB",
           serial: "MOCK123",
           removable: true,
-          vendor: "Mock"
+          vendor: "Mock",
+          device_type: "USB Drive"
         }
       ],
       count: 1,
       timestamp: new Date().toISOString(),
+      platform: process.platform,
       mock: true
     };
   }
 
   return new Promise((resolve) => {
-    try {
-      // Use the unified function
-      const scanProcess = callPythonScript(['--list', '--json']);
+    const scanProcess = spawn('python3', [pythonTool, '--list', '--json'], {
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    
+    let stdout = '';
+    let stderr = '';
+    
+    scanProcess.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+    
+    scanProcess.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+    
+    scanProcess.on('close', (code) => {
+      console.log(`[DEBUG] Device scan completed with code: ${code}`);
       
-      let stdout = '';
-      let stderr = '';
-      
-      scanProcess.stdout.on('data', (data) => {
-        stdout += data.toString();
-      });
-      
-      scanProcess.stderr.on('data', (data) => {
-        stderr += data.toString();
-        console.error('[PYTHON ERROR]:', data.toString());
-      });
-      
-      scanProcess.on('close', (code) => {
-        console.log('[DEBUG] Scan process closed with code:', code);
-        console.log('[DEBUG] Stdout:', stdout);
-        console.log('[DEBUG] Stderr:', stderr);
-        
-        if (code === 0) {
-          try {
-            const result = JSON.parse(stdout);
-            resolve(result);
-          } catch (e) {
-            console.error('[ERROR] Failed to parse JSON:', e);
-            resolve({ devices: [], count: 0, error: 'Failed to parse scan results', details: e.message });
-          }
-        } else {
-          resolve({ 
-            devices: [], 
-            count: 0, 
-            error: stderr || `Scan failed with exit code ${code}`,
-            code: code
-          });
+      if (code === 0) {
+        try {
+          const result = JSON.parse(stdout);
+          resolve(result);
+        } catch (e) {
+          console.error('[ERROR] Failed to parse device scan JSON:', e);
+          resolve({ devices: [], count: 0, error: 'Failed to parse scan results' });
         }
-      });
-      
-      scanProcess.on('error', (error) => {
-        console.error('[ERROR] Scan process error:', error);
-        resolve({ 
-          devices: [], 
-          count: 0, 
-          error: `Process spawn error: ${error.message}`,
-          code: 'SPAWN_ERROR'
-        });
-      });
-      
-    } catch (error) {
-      console.error('[ERROR] Failed to start scan process:', error);
-      resolve({ 
-        devices: [], 
-        count: 0, 
-        error: error.message,
-        code: 'SCRIPT_NOT_FOUND'
-      });
-    }
+      } else {
+        console.error('[ERROR] Device scan failed:', stderr);
+        resolve({ devices: [], count: 0, error: stderr || 'Scan failed' });
+      }
+    });
   });
 });
 
 /* ---------- IPC: Wipe Process ---------- */
 ipcMain.on('start-wipe', (event, { devicePath, method, outputLog, deviceInfo }) => {
-  const pythonTool = path.join(__dirname, '..', 'wipe-tool', 'wipe.py');
+  const pythonTool = path.join(__dirname, '..', 'wipe-tool', 'mainWipe.py');
   const logPath = outputLog || path.join(app.getPath('temp'), `wipe_log_${Date.now()}.json`);
   
-  // Safety checks
-  const lower = (devicePath || '').toString().toLowerCase();
-  if (!devicePath || lower === '/' || lower.startsWith('c:') || lower.includes('physicaldrive0')) {
+  // Platform-specific safety checks
+  const isSystemPath = process.platform === 'win32' 
+    ? devicePath.includes('PHYSICALDRIVE0')
+    : (devicePath === '/' || devicePath.startsWith('/dev/sda'));
+  
+  if (!devicePath || isSystemPath) {
     event.reply('wipe-error', 'Refusing to wipe system/unsafe device');
     return;
   }
 
   if (!fs.existsSync(pythonTool)) {
-    // Mock mode
+    // Enhanced mock mode with platform detection
+    console.log('[DEBUG] Main wipe tool not found, running enhanced mock wipe');
     let percent = 0;
+    const platform = process.platform === 'win32' ? 'Windows' : 'Linux';
+    
     const interval = setInterval(() => {
-      percent += 5;
+      percent += 3;
       event.reply('wipe-progress', { 
         progress: percent, 
-        message: `Mock wipe progress ${percent}%`
+        message: `Mock ${platform} wipe progress ${percent}%`,
+        timestamp: new Date().toISOString(),
+        platform: platform
       });
       
       if (percent >= 100) {
         clearInterval(interval);
         
+        // Create enhanced mock log
         const mockLog = {
           version: "1.0",
           device: { 
             path: devicePath, 
-            name: deviceInfo?.name || 'Mock USB Device',
-            size: deviceInfo?.size || '16.0G'
+            name: deviceInfo?.name || `Mock ${platform} Device`,
+            size: deviceInfo?.size || '16.0G',
+            serial: deviceInfo?.serial || 'MOCK123',
+            model: deviceInfo?.model || `Mock ${platform} Drive`,
+            vendor: deviceInfo?.vendor || 'Mock',
+            device_type: deviceInfo?.device_type || 'Mock Drive'
           },
           wipe: { 
             method, 
+            nist_level: method === 'purge' ? 'purge' : method === 'destroy' ? 'destroy' : 'clear',
             status: 'success', 
             started_at: new Date().toISOString(), 
-            finished_at: new Date().toISOString()
+            finished_at: new Date().toISOString(),
+            passes_completed: method === 'destroy' ? 7 : method === 'purge' ? 3 : 1,
+            verified_clean: true,
+            tools_used: platform === 'Windows' ? ['PowerShell', 'FileStream API'] : ['dd', 'shred']
+          },
+          system: { 
+            tool_version: `1.0.0-${platform.toLowerCase()}-mock`,
+            platform: platform,
+            operator: process.env.USERNAME || process.env.USER || 'Mock User',
+            admin_privileges: true
+          },
+          compliance: {
+            nist_800_88: true,
+            certificate_id: `MOCK-${platform.toUpperCase()}-${Date.now()}`,
+            dod_5220_22_m: method !== 'clear'
           }
         };
         
@@ -178,79 +189,80 @@ ipcMain.on('start-wipe', (event, { devicePath, method, outputLog, deviceInfo }) 
           devicePath: devicePath,
           deviceInfo: mockLog.device,
           method: method,
+          timestamp: new Date().toISOString(),
+          platform: platform,
           mock: true
         });
       }
-    }, 800);
+    }, 600);
     return;
   }
 
-  // Real mode - use unified function
-  try {
-    const wipeProcess = callPythonScript(['--device', devicePath, '--method', method, '--output', logPath]);
-    
-    wipeProcess.stdout.on('data', (data) => {
-      const lines = data.toString().split('\n');
-      for (const line of lines) {
-        if (line.trim()) {
-          try {
-            const progressData = JSON.parse(line);
-            if (progressData.progress !== undefined) {
-              event.reply('wipe-progress', progressData);
-            }
-          } catch (e) {
-            event.reply('wipe-log', { level: 'info', text: line });
-          }
-        }
-      }
-    });
-    
-    wipeProcess.stderr.on('data', (data) => {
-      console.error('[WIPE ERROR]:', data.toString());
-      event.reply('wipe-log', { level: 'error', text: data.toString() });
-    });
-    
-    wipeProcess.on('close', (code) => {
-      if (code === 0) {
-        let logData = {};
+  // Real mode with platform detection
+  const args = [pythonTool, '--device', devicePath, '--method', method, '--output', logPath];
+  
+  console.log(`[DEBUG] Starting cross-platform wipe: python3 ${args.join(' ')}`);
+  
+  const wipeProcess = spawn('python3', args, {
+    stdio: ['pipe', 'pipe', 'pipe']
+  });
+  
+  wipeProcess.stdout.on('data', (data) => {
+    const lines = data.toString().split('\n');
+    for (const line of lines) {
+      if (line.trim()) {
         try {
-          if (fs.existsSync(logPath)) {
-            logData = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+          const progressData = JSON.parse(line);
+          if (progressData.progress !== undefined) {
+            event.reply('wipe-progress', progressData);
+          } else if (progressData.message) {
+            event.reply('wipe-log', { level: 'info', text: progressData.message });
           }
         } catch (e) {
-          console.error(`Failed to read wipe log: ${e.message}`);
+          // Non-JSON output, treat as log
+          event.reply('wipe-log', { level: 'info', text: line });
         }
-        
-        event.reply('wipe-done', { 
-          success: true, 
-          logPath: logPath,
-          devicePath: devicePath,
-          deviceInfo: logData.device || deviceInfo,
-          method: method
-        });
-      } else {
-        event.reply('wipe-done', { 
-          success: false, 
-          error: `Wipe process failed with exit code ${code}`
-        });
       }
-    });
+    }
+  });
+  
+  wipeProcess.stderr.on('data', (data) => {
+    console.error(`[WIPE ERROR] ${data}`);
+    event.reply('wipe-log', { level: 'error', text: data.toString() });
+  });
+  
+  wipeProcess.on('close', (code) => {
+    console.log(`[DEBUG] Cross-platform wipe process exited with code: ${code}`);
     
-    wipeProcess.on('error', (error) => {
-      console.error('[WIPE PROCESS ERROR]:', error);
+    if (code === 0) {
+      // Read the generated log file
+      let logData = {};
+      try {
+        if (fs.existsSync(logPath)) {
+          logData = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+        }
+      } catch (e) {
+        console.error(`[ERROR] Failed to read wipe log: ${e.message}`);
+      }
+      
+      event.reply('wipe-done', { 
+        success: true, 
+        logPath: logPath,
+        devicePath: devicePath,
+        deviceInfo: logData.device || deviceInfo,
+        method: method,
+        timestamp: new Date().toISOString(),
+        platform: logData.system?.platform || 'Unknown',
+        wipeData: logData
+      });
+    } else {
       event.reply('wipe-done', { 
         success: false, 
-        error: `Process error: ${error.message}`
+        code: code,
+        error: `Cross-platform wipe process failed with exit code ${code}`
       });
-    });
-    
-  } catch (error) {
-    console.error('[WIPE START ERROR]:', error);
-    event.reply('wipe-done', { 
-      success: false, 
-      error: error.message
-    });
-  }
+    }
+  });
 });
 
 /* ---------- IPC: Certificate Generation ---------- */

@@ -202,7 +202,7 @@ class WipeToolCLI:
         """Get the appropriate wipe command based on method"""
         if os.name == 'nt':
             # Windows commands
-            # Note: These require additional tools or PowerShell scripts
+            # These require additional tools or PowerShell scripts
             commands = {
                 "clear": f'powershell -Command "& {{$device = Get-WmiObject -Class Win32_DiskDrive | Where-Object {{$_.DeviceID -eq \\\"{device}\\\"}}; if($device) {{Write-Host \\\"Clearing device {device}...\\\"; $stream = [System.IO.File]::OpenWrite($device); $buffer = New-Object byte[] 1048576; for($i=0; $i -lt $device.Size; $i += 1048576) {{$stream.Write($buffer, 0, $buffer.Length)}}; $stream.Close()}}}}"',
                 "purge": f'cipher /w:{device}',

@@ -1,25 +1,21 @@
+---------------------------------------------------------------------
+//new updated code 
+cd /root/NullBytes/DekstopApp/wipe-tool
+
+# Test Linux-specific tool
+python3 linuxWipe.py --list --json
+python3 linuxWipe.py --check-root
+
+# Test main dispatcher
+python3 mainWipe.py --platform-info
+python3 mainWipe.py --list --json
+
+
 cd /root/NullBytes/DekstopApp && \
-chmod +x wipe-tool/wipe.py && \
+chmod +x wipe-tool/linuxWipe.py wipe-tool/windowsWipe.py wipe-tool/mainWipe.py && \
 cd Cert_Tool && source cert_env/bin/activate && pip install -r requirements.txt && deactivate && \
 cd ../gui && npm install && npm start
-
-//Windows
-Set-Location "C:\Users\antiq\OneDrive\Desktop\NullBytes\DekstopApp"
-
-# Verify Python script syntax
-python -m py_compile wipe-tool\wipe.py
-
-# Setup Certificate Tool virtual environment
-Set-Location Cert_Tool
-python -m venv cert_env
-.\cert_env\Scripts\Activate.ps1
-pip install -r requirements.txt
-deactivate
-
-# Setup and launch GUI
-Set-Location ..\gui
-npm install
-npm start
+---------------------------------------------
 
 1. Administrator Privileges
 The wipe operations require administrator privileges on Windows. Run your terminal as Administrator:
@@ -31,3 +27,28 @@ You may need to add exceptions for:
 
 The entire DekstopApp folder
 Python and Node.js executables
+--------------------------windows 
+cd C:\Users\antiq\OneDrive\Desktop\NullBytes\DekstopApp\wipe-tool
+
+# Test Windows-specific tool
+python windowsWipe.py --list --json
+python windowsWipe.py --check-admin
+
+# Test main dispatcher
+python mainWipe.py --platform-info
+python mainWipe.py --list --json
+
+
+Set-Location "C:\Users\antiq\OneDrive\Desktop\NullBytes\DekstopApp"
+python -m py_compile wipe-tool\linuxWipe.py
+python -m py_compile wipe-tool\windowsWipe.py  
+python -m py_compile wipe-tool\mainWipe.py
+Set-Location Cert_Tool
+python -m venv cert_env
+.\cert_env\Scripts\Activate.ps1
+pip install -r requirements.txt
+deactivate
+Set-Location ..\gui
+npm install
+npm start
+-------------------------------------------

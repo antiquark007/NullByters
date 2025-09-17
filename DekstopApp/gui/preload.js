@@ -13,19 +13,3 @@ contextBridge.exposeInMainWorld('api', {
   showSaveDialog: (opts) => ipcRenderer.invoke('show-save-dialog', opts),
   copyFile: (args) => ipcRenderer.invoke('copy-file', args)
 });
-
-// ┌─────────────────┐    ┌──────────────┐    ┌─────────────────┐
-// │   Frontend      │    │   Preload    │    │  Main Process   │
-// │   (HTML/JS)     │    │   Bridge     │    │   (Node.js)     │
-// └─────────────────┘    └──────────────┘    └─────────────────┘
-//          │                       │                    │
-//          │ window.api.scanDevices()                   │
-//          ├──────────────────────→│                    │
-//          │                       │ ipcRenderer.invoke │
-//          │                       ├───────────────────→│
-//          │                       │                    │ Spawn C tool
-//          │                       │                    ├──────────→
-//          │                       │                    │
-//          │                       │     Response       │
-//          │      Promise          │←───────────────────┤
-//          │←──────────────────────┤                    │
