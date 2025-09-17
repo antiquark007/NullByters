@@ -147,7 +147,6 @@ dist_electron/
 *.exe
 *.out
 *.app
-wipe-tool
 wipe-tool.exe
 
 # Debug files
