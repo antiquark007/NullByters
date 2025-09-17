@@ -2,3 +2,32 @@ cd /root/NullBytes/DekstopApp && \
 chmod +x wipe-tool/wipe.py && \
 cd Cert_Tool && source cert_env/bin/activate && pip install -r requirements.txt && deactivate && \
 cd ../gui && npm install && npm start
+
+//Windows
+Set-Location "C:\Users\antiq\OneDrive\Desktop\NullBytes\DekstopApp"
+
+# Verify Python script syntax
+python -m py_compile wipe-tool\wipe.py
+
+# Setup Certificate Tool virtual environment
+Set-Location Cert_Tool
+python -m venv cert_env
+.\cert_env\Scripts\Activate.ps1
+pip install -r requirements.txt
+deactivate
+
+# Setup and launch GUI
+Set-Location ..\gui
+npm install
+npm start
+
+1. Administrator Privileges
+The wipe operations require administrator privileges on Windows. Run your terminal as Administrator:
+
+Right-click Command Prompt/PowerShell
+Select "Run as administrator"
+2. Windows Defender
+You may need to add exceptions for:
+
+The entire DekstopApp folder
+Python and Node.js executables

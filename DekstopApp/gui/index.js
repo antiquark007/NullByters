@@ -19,9 +19,34 @@ function createWindow() {
   mainWindow.loadFile('pages/landing.html');
 }
 
+// Unified function to call Python script with proper error handling
+function callPythonScript(args) {
+    const scriptPath = path.join(__dirname, '..', 'wipe-tool', 'wipe.py');
+    
+    // Check if script exists
+    if (!fs.existsSync(scriptPath)) {
+        console.error('[ERROR] Python script not found at:', scriptPath);
+        throw new Error(`Python script not found: ${scriptPath}`);
+    }
+    
+    // Use correct Python command for platform
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    
+    console.log('[DEBUG] Executing:', pythonCmd, [scriptPath, ...args]);
+    
+    return spawn(pythonCmd, [scriptPath, ...args], {
+        cwd: path.join(__dirname, '..'),
+        env: process.env,
+        stdio: ['pipe', 'pipe', 'pipe']
+    });
+}
+
 /* ---------- IPC: Device Scanning ---------- */
 ipcMain.handle('scan-devices', async () => {
   const pythonTool = path.join(__dirname, '..', 'wipe-tool', 'wipe.py');
+  
+  console.log('[DEBUG] Looking for Python tool at:', pythonTool);
+  console.log('[DEBUG] File exists:', fs.existsSync(pythonTool));
   
   if (!fs.existsSync(pythonTool)) {
     console.log('[DEBUG] Python wipe tool not found, using mock data');
@@ -29,7 +54,7 @@ ipcMain.handle('scan-devices', async () => {
       devices: [
         {
           name: "Mock USB Drive",
-          path: "/dev/sdb",
+          path: "\\\\?\\PHYSICALDRIVE1",  // Windows format for mock
           size: "16.0G",
           model: "Mock USB",
           serial: "MOCK123",
@@ -44,33 +69,64 @@ ipcMain.handle('scan-devices', async () => {
   }
 
   return new Promise((resolve) => {
-    const scanProcess = spawn('python3', [pythonTool, '--list', '--json'], {
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
-    
-    let stdout = '';
-    let stderr = '';
-    
-    scanProcess.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-    
-    scanProcess.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
-    
-    scanProcess.on('close', (code) => {
-      if (code === 0) {
-        try {
-          const result = JSON.parse(stdout);
-          resolve(result);
-        } catch (e) {
-          resolve({ devices: [], count: 0, error: 'Failed to parse scan results' });
+    try {
+      // Use the unified function
+      const scanProcess = callPythonScript(['--list', '--json']);
+      
+      let stdout = '';
+      let stderr = '';
+      
+      scanProcess.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+      
+      scanProcess.stderr.on('data', (data) => {
+        stderr += data.toString();
+        console.error('[PYTHON ERROR]:', data.toString());
+      });
+      
+      scanProcess.on('close', (code) => {
+        console.log('[DEBUG] Scan process closed with code:', code);
+        console.log('[DEBUG] Stdout:', stdout);
+        console.log('[DEBUG] Stderr:', stderr);
+        
+        if (code === 0) {
+          try {
+            const result = JSON.parse(stdout);
+            resolve(result);
+          } catch (e) {
+            console.error('[ERROR] Failed to parse JSON:', e);
+            resolve({ devices: [], count: 0, error: 'Failed to parse scan results', details: e.message });
+          }
+        } else {
+          resolve({ 
+            devices: [], 
+            count: 0, 
+            error: stderr || `Scan failed with exit code ${code}`,
+            code: code
+          });
         }
-      } else {
-        resolve({ devices: [], count: 0, error: stderr || 'Scan failed' });
-      }
-    });
+      });
+      
+      scanProcess.on('error', (error) => {
+        console.error('[ERROR] Scan process error:', error);
+        resolve({ 
+          devices: [], 
+          count: 0, 
+          error: `Process spawn error: ${error.message}`,
+          code: 'SPAWN_ERROR'
+        });
+      });
+      
+    } catch (error) {
+      console.error('[ERROR] Failed to start scan process:', error);
+      resolve({ 
+        devices: [], 
+        count: 0, 
+        error: error.message,
+        code: 'SCRIPT_NOT_FOUND'
+      });
+    }
   });
 });
 
@@ -81,7 +137,7 @@ ipcMain.on('start-wipe', (event, { devicePath, method, outputLog, deviceInfo }) 
   
   // Safety checks
   const lower = (devicePath || '').toString().toLowerCase();
-  if (!devicePath || lower === '/' || lower.startsWith('c:')) {
+  if (!devicePath || lower === '/' || lower.startsWith('c:') || lower.includes('physicaldrive0')) {
     event.reply('wipe-error', 'Refusing to wipe system/unsafe device');
     return;
   }
@@ -129,54 +185,72 @@ ipcMain.on('start-wipe', (event, { devicePath, method, outputLog, deviceInfo }) 
     return;
   }
 
-  // Real mode
-  const args = [pythonTool, '--device', devicePath, '--method', method, '--output', logPath];
-  
-  const wipeProcess = spawn('python3', args, {
-    stdio: ['pipe', 'pipe', 'pipe']
-  });
-  
-  wipeProcess.stdout.on('data', (data) => {
-    const lines = data.toString().split('\n');
-    for (const line of lines) {
-      if (line.trim()) {
+  // Real mode - use unified function
+  try {
+    const wipeProcess = callPythonScript(['--device', devicePath, '--method', method, '--output', logPath]);
+    
+    wipeProcess.stdout.on('data', (data) => {
+      const lines = data.toString().split('\n');
+      for (const line of lines) {
+        if (line.trim()) {
+          try {
+            const progressData = JSON.parse(line);
+            if (progressData.progress !== undefined) {
+              event.reply('wipe-progress', progressData);
+            }
+          } catch (e) {
+            event.reply('wipe-log', { level: 'info', text: line });
+          }
+        }
+      }
+    });
+    
+    wipeProcess.stderr.on('data', (data) => {
+      console.error('[WIPE ERROR]:', data.toString());
+      event.reply('wipe-log', { level: 'error', text: data.toString() });
+    });
+    
+    wipeProcess.on('close', (code) => {
+      if (code === 0) {
+        let logData = {};
         try {
-          const progressData = JSON.parse(line);
-          if (progressData.progress !== undefined) {
-            event.reply('wipe-progress', progressData);
+          if (fs.existsSync(logPath)) {
+            logData = JSON.parse(fs.readFileSync(logPath, 'utf8'));
           }
         } catch (e) {
-          event.reply('wipe-log', { level: 'info', text: line });
+          console.error(`Failed to read wipe log: ${e.message}`);
         }
+        
+        event.reply('wipe-done', { 
+          success: true, 
+          logPath: logPath,
+          devicePath: devicePath,
+          deviceInfo: logData.device || deviceInfo,
+          method: method
+        });
+      } else {
+        event.reply('wipe-done', { 
+          success: false, 
+          error: `Wipe process failed with exit code ${code}`
+        });
       }
-    }
-  });
-  
-  wipeProcess.on('close', (code) => {
-    if (code === 0) {
-      let logData = {};
-      try {
-        if (fs.existsSync(logPath)) {
-          logData = JSON.parse(fs.readFileSync(logPath, 'utf8'));
-        }
-      } catch (e) {
-        console.error(`Failed to read wipe log: ${e.message}`);
-      }
-      
-      event.reply('wipe-done', { 
-        success: true, 
-        logPath: logPath,
-        devicePath: devicePath,
-        deviceInfo: logData.device || deviceInfo,
-        method: method
-      });
-    } else {
+    });
+    
+    wipeProcess.on('error', (error) => {
+      console.error('[WIPE PROCESS ERROR]:', error);
       event.reply('wipe-done', { 
         success: false, 
-        error: `Wipe process failed with exit code ${code}`
+        error: `Process error: ${error.message}`
       });
-    }
-  });
+    });
+    
+  } catch (error) {
+    console.error('[WIPE START ERROR]:', error);
+    event.reply('wipe-done', { 
+      success: false, 
+      error: error.message
+    });
+  }
 });
 
 /* ---------- IPC: Certificate Generation ---------- */
@@ -184,10 +258,19 @@ ipcMain.handle('generate-cert', async (event, args) => {
   const { logPath, outJson, outPdf, deviceInfo } = args;
   
   const certToolDir = path.join(__dirname, '..', 'Cert_Tool');
-  const venvPython = path.join(certToolDir, 'cert_env', 'bin', 'python');
+  
+  // Windows uses Scripts instead of bin
+  const venvPython = process.platform === 'win32' 
+    ? path.join(certToolDir, 'cert_env', 'Scripts', 'python.exe')
+    : path.join(certToolDir, 'cert_env', 'bin', 'python');
+    
   const mainScript = path.join(certToolDir, 'main.py');
   
+  console.log('[DEBUG] Looking for venv python at:', venvPython);
+  console.log('[DEBUG] Looking for main script at:', mainScript);
+  
   if (!fs.existsSync(venvPython) || !fs.existsSync(mainScript)) {
+    console.log('[DEBUG] Certificate tool not found, using mock');
     const mockCert = {
       version: "1.0",
       certificate: {
