@@ -3,11 +3,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "electron . --no-sandbox"
+    "start": "electron . --no-sandbox",
+    "setup-cert": "cd ../Cert_Tool && python3 -m venv cert_env && source cert_env/bin/activate && pip install -r requirements.txt",
+    "setup-wipe": "chmod +x ../wipe-tool/wipe.py",
+    "setup": "npm run setup-wipe && npm run setup-cert && npm install",
+    "dev": "npm run setup && npm start",
+    "test-wipe": "cd ../wipe-tool && python3 wipe.py --list --json",
+    "test-cert": "cd ../Cert_Tool && source cert_env/bin/activate && python main.py --help"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "ISC", 
   "description": "",
   "devDependencies": {
     "electron": "^38.0.0"

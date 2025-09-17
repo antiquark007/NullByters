@@ -1,0 +1,19 @@
+{
+  "sample_key": "sample_value",
+  "description": "This is a sample JSON configuration file for the certificate tool.",
+  "settings": {
+    "option1": true,
+    "option2": "value2",
+    "option3": 123
+  },
+  "data": [
+    {
+      "id": 1,
+      "name": "Sample Data 1"
+    },
+    {
+      "id": 2,
+      "name": "Sample Data 2"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+certifi
+requests
+pillow
+qrcode
+cryptography
+PyPDF2
+pypdf
+charset-normalizer
+cffi
+```

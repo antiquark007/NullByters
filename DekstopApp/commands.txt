@@ -1,0 +1,4 @@
+cd /root/NullBytes/DekstopApp && \
+chmod +x wipe-tool/wipe.py && \
+cd Cert_Tool && source cert_env/bin/activate && pip install -r requirements.txt && deactivate && \
+cd ../gui && npm install && npm start

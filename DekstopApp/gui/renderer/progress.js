@@ -25,15 +25,22 @@ window.api.onWipeProgress((data) => {
   appendLog(message);
 });
 
-window.api.onWipeDone((res) => {
-  if (res.success) {
-    appendLog('Wipe finished successfully.');
-    sessionStorage.setItem('lastWipeLog', res.logPath || '');
-    setTimeout(()=> window.api.loadPage('success.html'), 700);
-  } else {
-    appendLog('Wipe failed: ' + JSON.stringify(res));
-    alert('Wipe failed: see logs.');
-  }
+window.api.onWipeDone((result) => {
+    console.log('[DEBUG] Wipe completed:', result);
+    
+    // Store result for success page
+    localStorage.setItem('wipeResult', JSON.stringify(result));
+    
+    if (result.success) {
+        // Navigate to success page
+        setTimeout(() => {
+            window.api.loadPage('success.html');
+        }, 2000);
+    } else {
+        // Show error
+        updateProgress(0, `❌ Wipe failed: ${result.error || 'Unknown error'}`);
+        document.getElementById('progress-bar').style.backgroundColor = '#dc3545';
+    }
 });
 
 homeBtn.addEventListener('click', ()=> window.api.loadPage('landing.html'));
