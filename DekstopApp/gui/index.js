@@ -29,27 +29,28 @@ function callPythonScript(args) {
         throw new Error(`Python script not found: ${scriptPath}`);
     }
     
-    // Use correct Python command for platform
+    // Use correct Python command for platform - FIXED FOR WINDOWS
     const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
     
     console.log('[DEBUG] Executing:', pythonCmd, [scriptPath, ...args]);
     
-    // FOR LINUX: Use sudo to run Python script with elevated privileges
-    if (process.platform !== 'win32') {
-        return spawn('sudo', [pythonCmd, scriptPath, ...args], {
+    // FOR WINDOWS: Remove sudo and use direct python execution
+    if (process.platform === 'win32') {
+        return spawn(pythonCmd, [scriptPath, ...args], {
             cwd: path.join(__dirname, '..'),
             env: process.env,
-            stdio: ['pipe', 'pipe', 'pipe']
+            stdio: ['pipe', 'pipe', 'pipe'],
+            shell: true  // Add shell: true for Windows
         });
     } else {
-        return spawn(pythonCmd, [scriptPath, ...args], {
+        // FOR LINUX: Use sudo to run Python script with elevated privileges
+        return spawn('sudo', [pythonCmd, scriptPath, ...args], {
             cwd: path.join(__dirname, '..'),
             env: process.env,
             stdio: ['pipe', 'pipe', 'pipe']
         });
     }
 }
-
 
 /* ---------- IPC: Device Scanning ---------- */
 ipcMain.handle('scan-devices', async () => {
@@ -68,48 +69,55 @@ ipcMain.handle('scan-devices', async () => {
           serial: "MOCK123",
           removable: true,
           vendor: "Mock",
+          interface: "USB",
           device_type: "USB Drive"
         }
       ],
       count: 1,
-      timestamp: new Date().toISOString(),
-      platform: process.platform,
       mock: true
     };
   }
 
   return new Promise((resolve) => {
-    const scanProcess = spawn('python3', [pythonTool, '--list', '--json'], {
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
-    
-    let stdout = '';
-    let stderr = '';
-    
-    scanProcess.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-    
-    scanProcess.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
-    
-    scanProcess.on('close', (code) => {
-      console.log(`[DEBUG] Device scan completed with code: ${code}`);
-      
-      if (code === 0) {
-        try {
-          const result = JSON.parse(stdout);
-          resolve(result);
-        } catch (e) {
-          console.error('[ERROR] Failed to parse device scan JSON:', e);
-          resolve({ devices: [], count: 0, error: 'Failed to parse scan results' });
+    try {
+      // Use corrected Python command for Windows
+      const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+      const scanProcess = spawn(pythonCmd, [pythonTool, '--list', '--json'], {
+        cwd: path.join(__dirname, '..'),
+        shell: process.platform === 'win32'  // Enable shell for Windows
+      });
+
+      let output = '';
+      let stderr = '';
+
+      scanProcess.stdout.on('data', (data) => {
+        output += data.toString();
+      });
+
+      scanProcess.stderr.on('data', (data) => {
+        stderr += data.toString();
+        console.error('[SCAN ERROR]', data.toString());
+      });
+
+      scanProcess.on('close', (code) => {
+        console.log(`[DEBUG] Scan process exited with code: ${code}`);
+        if (code === 0 && output.trim()) {
+          try {
+            const result = JSON.parse(output);
+            resolve(result);
+          } catch (e) {
+            console.error('[ERROR] Failed to parse scan results:', e);
+            resolve({ devices: [], count: 0, error: 'Failed to parse scan results' });
+          }
+        } else {
+          console.error('[ERROR] Device scan failed:', stderr);
+          resolve({ devices: [], count: 0, error: stderr || 'Scan failed' });
         }
-      } else {
-        console.error('[ERROR] Device scan failed:', stderr);
-        resolve({ devices: [], count: 0, error: stderr || 'Scan failed' });
-      }
-    });
+      });
+    } catch (error) {
+      console.error('[ERROR] Failed to start scan process:', error);
+      resolve({ devices: [], count: 0, error: error.message });
+    }
   });
 });
 
@@ -181,7 +189,11 @@ ipcMain.on('start-wipe', (event, { devicePath, method, outputLog, deviceInfo }) 
           }
         };
         
-        fs.writeFileSync(logPath, JSON.stringify(mockLog, null, 2));
+        try {
+          fs.writeFileSync(logPath, JSON.stringify(mockLog, null, 2));
+        } catch (err) {
+          console.error('[ERROR] Failed to write mock log:', err);
+        }
         
         event.reply('wipe-done', { 
           success: true, 
@@ -191,6 +203,7 @@ ipcMain.on('start-wipe', (event, { devicePath, method, outputLog, deviceInfo }) 
           method: method,
           timestamp: new Date().toISOString(),
           platform: platform,
+          wipeData: mockLog,
           mock: true
         });
       }
@@ -198,48 +211,111 @@ ipcMain.on('start-wipe', (event, { devicePath, method, outputLog, deviceInfo }) 
     return;
   }
 
-  // Real mode with platform detection
+  // Real mode with cross-platform support
+  console.log(`[DEBUG] Starting ${process.platform === 'win32' ? 'Windows' : 'Linux'} wipe process`);
+  
+  // Use correct Python command for platform
+  const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
   const args = [pythonTool, '--device', devicePath, '--method', method, '--output', logPath];
   
-  console.log(`[DEBUG] Starting cross-platform wipe: python3 ${args.join(' ')}`);
+  console.log(`[DEBUG] Executing: ${pythonCmd} ${args.join(' ')}`);
   
-  const wipeProcess = spawn('python3', args, {
-    stdio: ['pipe', 'pipe', 'pipe']
-  });
+  // Platform-specific spawn options
+  const spawnOptions = {
+    stdio: ['pipe', 'pipe', 'pipe'],
+    cwd: path.join(__dirname, '..'),
+    env: process.env
+  };
   
+  // Add Windows-specific options
+  if (process.platform === 'win32') {
+    spawnOptions.shell = true;
+  }
+  
+  const wipeProcess = spawn(pythonCmd, args, spawnOptions);
+  
+  // Handle stdout data (progress updates and logs)
   wipeProcess.stdout.on('data', (data) => {
     const lines = data.toString().split('\n');
     for (const line of lines) {
       if (line.trim()) {
         try {
           const progressData = JSON.parse(line);
+          
+          // Handle different types of JSON messages
           if (progressData.progress !== undefined) {
+            // Progress update
             event.reply('wipe-progress', progressData);
           } else if (progressData.message) {
-            event.reply('wipe-log', { level: 'info', text: progressData.message });
+            // Status message
+            event.reply('wipe-log', { 
+              level: 'info', 
+              text: progressData.message,
+              timestamp: progressData.timestamp || new Date().toISOString()
+            });
+          } else if (progressData.error) {
+            // Error message
+            event.reply('wipe-log', { 
+              level: 'error', 
+              text: progressData.error,
+              timestamp: progressData.timestamp || new Date().toISOString()
+            });
           }
         } catch (e) {
-          // Non-JSON output, treat as log
-          event.reply('wipe-log', { level: 'info', text: line });
+          // Non-JSON output, treat as regular log
+          if (line.trim().length > 0) {
+            event.reply('wipe-log', { 
+              level: 'info', 
+              text: line.trim(),
+              timestamp: new Date().toISOString()
+            });
+          }
         }
       }
     }
   });
   
+  // Handle stderr data (errors and debug info)
   wipeProcess.stderr.on('data', (data) => {
-    console.error(`[WIPE ERROR] ${data}`);
-    event.reply('wipe-log', { level: 'error', text: data.toString() });
+    const errorText = data.toString().trim();
+    console.error(`[WIPE ERROR] ${errorText}`);
+    
+    // Try to parse as JSON first, fallback to plain text
+    try {
+      const errorData = JSON.parse(errorText);
+      if (errorData.error) {
+        event.reply('wipe-error', errorData.error);
+      } else {
+        event.reply('wipe-log', { 
+          level: 'error', 
+          text: errorText,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (e) {
+      // Plain text error
+      event.reply('wipe-log', { 
+        level: 'error', 
+        text: errorText,
+        timestamp: new Date().toISOString()
+      });
+    }
   });
   
+  // Handle process completion
   wipeProcess.on('close', (code) => {
     console.log(`[DEBUG] Cross-platform wipe process exited with code: ${code}`);
     
     if (code === 0) {
-      // Read the generated log file
+      // Success - read the generated log file
       let logData = {};
       try {
         if (fs.existsSync(logPath)) {
-          logData = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+          const logContent = fs.readFileSync(logPath, 'utf8');
+          logData = JSON.parse(logContent);
+          console.log('[DEBUG] Successfully read wipe log file');
+        } else {
+          console.warn('[WARN] Wipe log file not found at:', logPath);
         }
       } catch (e) {
         console.error(`[ERROR] Failed to read wipe log: ${e.message}`);
@@ -249,22 +325,69 @@ ipcMain.on('start-wipe', (event, { devicePath, method, outputLog, deviceInfo }) 
         success: true, 
         logPath: logPath,
         devicePath: devicePath,
-        deviceInfo: logData.device || deviceInfo,
+        deviceInfo: logData.device || deviceInfo || { name: 'Unknown Device' },
         method: method,
         timestamp: new Date().toISOString(),
-        platform: logData.system?.platform || 'Unknown',
-        wipeData: logData
+        platform: logData.system?.platform || (process.platform === 'win32' ? 'Windows' : 'Linux'),
+        wipeData: logData,
+        exitCode: code
       });
     } else {
+      // Failure
+      const platform = process.platform === 'win32' ? 'Windows' : 'Linux';
+      const errorMessage = `${platform} wipe process failed with exit code ${code}`;
+      
+      console.error(`[ERROR] ${errorMessage}`);
+      
       event.reply('wipe-done', { 
         success: false, 
         code: code,
-        error: `Cross-platform wipe process failed with exit code ${code}`
+        error: errorMessage,
+        devicePath: devicePath,
+        method: method,
+        timestamp: new Date().toISOString(),
+        platform: platform
       });
     }
   });
+  
+  // Handle process errors (e.g., spawn failures)
+  wipeProcess.on('error', (error) => {
+    console.error(`[ERROR] Failed to start wipe process: ${error.message}`);
+    
+    // Provide helpful error messages based on the error type
+    let userMessage = `Failed to start wipe process: ${error.message}`;
+    
+    if (error.code === 'ENOENT') {
+      const platform = process.platform === 'win32' ? 'Windows' : 'Linux';
+      const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+      userMessage = `Python not found. Please ensure ${pythonCmd} is installed and available in PATH on ${platform}.`;
+    } else if (error.code === 'EACCES') {
+      userMessage = 'Permission denied. Please run the application as Administrator (Windows) or with sudo (Linux).';
+    }
+    
+    event.reply('wipe-error', userMessage);
+  });
+  
+  // Send initial status
+  event.reply('wipe-log', { 
+    level: 'info', 
+    text: `Starting wipe process for device: ${devicePath}`,
+    timestamp: new Date().toISOString()
+  });
+  
+  event.reply('wipe-log', { 
+    level: 'info', 
+    text: `Method: ${method.toUpperCase()} (${method === 'clear' ? '1 pass' : method === 'purge' ? '3 passes' : '7 passes'})`,
+    timestamp: new Date().toISOString()
+  });
+  
+  event.reply('wipe-log', { 
+    level: 'info', 
+    text: `Platform: ${process.platform === 'win32' ? 'Windows' : 'Linux'}`,
+    timestamp: new Date().toISOString()
+  });
 });
-
 /* ---------- IPC: Certificate Generation ---------- */
 ipcMain.handle('generate-cert', async (event, args) => {
   const { logPath, outJson, outPdf, deviceInfo } = args;
