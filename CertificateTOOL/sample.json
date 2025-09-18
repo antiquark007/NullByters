@@ -1,0 +1,30 @@
+{
+  "performer": {
+    "name": "Omega",
+    "title": "Data Sanitization Engineer",
+    "organization": "NullBtyes Solutions Pvt. Ltd.",
+    "location": "Bengaluru, India",
+    "phone": "+91-9876543210"
+  },
+  "media": {
+    "vendor": "Samsung",
+    "model": "SSD 860 EVO",
+    "serial_number": "S3Z9NB0K123456X",
+    "property_number": "IT-2025-045",
+    "type": "Solid State Drive",
+    "source": "User Laptop - Asset #LTP-778",
+    "classification": "Confidential",
+    "data_backed_up": "Yes"
+  },
+  "sanitization": {
+    "method_type": "Purge",
+    "method_used": "Crypto Erase",
+    "tool_used": "SecureWipeTool v3.2.1",
+    "verification_method": "Full",
+    "post_classification": "Unclassified"
+  },
+  "destination": {
+    "type": "Recycling Facility",
+    "details": "E-Waste Solutions, Bengaluru"
+  }
+}

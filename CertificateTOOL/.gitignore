@@ -1,0 +1,30 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.log
+
+# --- Virtual env ---
+.venv/
+env/
+venv/
+
+# --- Secrets ---
+.env
+keys/
+*.pem
+
+# --- Generated outputs ---
+out/
+*.pdf
+*.png
+*.jpg
+*.jpeg
+
+# --- OS / Editor junk ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
