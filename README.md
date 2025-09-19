@@ -1,7 +1,7 @@
-# 🗂️ NullBytes - Secure Data Wiping & Certificate Management Suite
+# 🗂️ NullByters - Secure Data Wiping & Certificate Management Suite
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)](https://github.com)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)](https://github.com/antiquark007/NullByters)
 [![NIST Compliant](https://img.shields.io/badge/NIST%20SP%20800--88-Compliant-green)](https://csrc.nist.gov/publications/detail/sp/800-88/rev-1/final)
 
 > A comprehensive, cross-platform secure data wiping solution that provides NIST SP 800-88 compliant data sanitization with automated certificate generation and verification.
@@ -22,7 +22,7 @@
 
 ## 🎯 Overview
 
-NullBytes is designed to provide military-grade data sanitization with comprehensive audit trails. The suite includes multiple implementations and testing approaches developed through iterative refinement, ensuring data security compliance across various platforms and use cases.
+NullByters is designed to provide enterprise-grade data sanitization with comprehensive audit trails and compliance reporting. The suite includes multiple implementations and testing approaches developed through iterative refinement, ensuring data security compliance across various platforms and enterprise use cases.
 
 **Key Benefits:**
 - ✅ NIST SP 800-88 Rev. 1 compliance
@@ -36,7 +36,7 @@ NullBytes is designed to provide military-grade data sanitization with comprehen
 ## 📁 Project Structure
 
 ```
-NullBytes/
+NullByters/
 ├── 📄 README.md                           # Project documentation
 ├── 📱 android/                            # Android device wiping tools
 │   ├── 🐍 pywipe.py                      # Python-based Android wiper
@@ -150,8 +150,8 @@ NullBytes/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/NullBytes.git
-   cd NullBytes
+   git clone https://github.com/antiquark007/NullByters.git
+   cd NullByters
    ```
 
 2. **Install Python dependencies:**
@@ -171,7 +171,7 @@ NullBytes/
    ```bash
    cd CrossPlatformDeskApp
    go mod tidy
-   go build -o nullbytes ./cmd
+   go build -o nullbyters ./cmd
    ```
 
 ### Usage Examples
@@ -179,10 +179,10 @@ NullBytes/
 #### Command Line Wiping
 ```bash
 # Wipe a specific device with NIST Clear method
-./nullbytes wipe --device /dev/sdb --method clear --certificate
+./nullbyters wipe --device /dev/sdb --method clear --certificate
 
 # Generate verification certificate only
-./nullbytes cert --device /dev/sdb --verify
+./nullbyters cert --device /dev/sdb --verify
 ```
 
 #### Python API
@@ -226,22 +226,25 @@ graph LR
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+We welcome contributions from the community! Please read our [Contributing Guidelines](CONTRIBUTING.md) for detailed information on how to contribute to NullByters.
 
 ### Development Setup
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+1. Fork the repository on GitHub
+2. Create a feature branch: `git checkout -b feature/your-feature-name`
+3. Make your changes and commit: `git commit -m 'Add your feature description'`
+4. Push to your branch: `git push origin feature/your-feature-name`
+5. Submit a Pull Request with a clear description of your changes
 
-### Code Standards
+### Code Standards & Guidelines
 
-- Follow PEP 8 for Python code
-- Use ESLint for JavaScript
-- Format Go code with `gofmt`
-- Document all public APIs
+- **Python**: Follow PEP 8 style guide and include type hints where applicable
+- **JavaScript/TypeScript**: Use ESLint configuration and Prettier for formatting
+- **Go**: Format code with `gofmt` and follow Go best practices
+- **C/C++**: Follow GNU coding standards for consistency
+- **Documentation**: Document all public APIs and include inline comments
+- **Testing**: Add comprehensive tests for new features and bug fixes
+- **Security**: Follow secure coding practices, especially for cryptographic operations
 
 ---
 
@@ -253,16 +256,30 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [NIST SP 800-88 Rev. 1](https://csrc.nist.gov/publications/detail/sp/800-88/rev-1/final) - Guidelines for Media Sanitization
-- Open source community for invaluable tools and libraries
-- Security researchers who validated our implementation
+- **[NIST SP 800-88 Rev. 1](https://csrc.nist.gov/publications/detail/sp/800-88/rev-1/final)** - Guidelines for Media Sanitization
+- **Open Source Community** - For invaluable tools, libraries, and feedback
+- **Security Research Community** - For validation and security auditing of our implementation
+- **Enterprise Partners** - For real-world testing and compliance validation
+- **Contributors** - Special thanks to all developers who have contributed to this project
+
+---
+
+## 📞 Support & Contact
+
+- **Issues & Bug Reports**: [GitHub Issues](https://github.com/antiquark007/NullByters/issues)
+- **Feature Requests**: [GitHub Discussions](https://github.com/antiquark007/NullByters/discussions)
+- **Security Issues**: Please report security vulnerabilities privately via email
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by the NullBytes Team**
+**Made with ❤️ by the NullByters Development Team**
 
-[🌟 Star this repo](https://github.com/your-username/NullBytes) | [🐛 Report Bug](https://github.com/your-username/NullBytes/issues) | [💡 Request Feature](https://github.com/your-username/NullBytes/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/antiquark007/NullByters?style=social)](https://github.com/antiquark007/NullByters/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/antiquark007/NullByters?style=social)](https://github.com/antiquark007/NullByters/network/members)
+[![GitHub Issues](https://img.shields.io/github/issues/antiquark007/NullByters)](https://github.com/antiquark007/NullByters/issues)
+
+[🌟 Star this repo](https://github.com/antiquark007/NullByters/stargazers) | [🐛 Report Bug](https://github.com/antiquark007/NullByters/issues/new?template=bug_report.md) | [💡 Request Feature](https://github.com/antiquark007/NullByters/issues/new?template=feature_request.md) | [📖 Documentation](https://github.com/antiquark007/NullByters/wiki)
 
 </div>
