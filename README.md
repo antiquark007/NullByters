@@ -1,6 +1,6 @@
 # 🗂️ NullByters - Secure Data Wiping & Certificate Management Suite
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)](https://github.com/antiquark007/NullByters)
 [![NIST Compliant](https://img.shields.io/badge/NIST%20SP%20800--88-Compliant-green)](https://csrc.nist.gov/publications/detail/sp/800-88/rev-1/final)
 
